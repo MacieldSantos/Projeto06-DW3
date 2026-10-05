@@ -175,3 +175,7 @@ const PORT = 5000;
 server.listen(PORT, () =>{
     console.log(`Servidor iniciado em http://localhost:${PORT}/`);
 })
+
+//
+//npm install -y
+//npm install sqlite3
