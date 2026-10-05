@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar Cadastros</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Cadastros Realizados</h1>
+    <a href="/">Voltar ao Menu Principal</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Cidade/UF</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaCorpo"></tbody>
+    </table>
+
+    <script>
+        async function carregarDados() {
+            const res = await fetch('/api/pessoas');
+            const pessoas = await res.json();
+            const tbody = document.getElementById('tabelaCorpo');
+            tbody.innerHTML = '';
+
+            pessoas.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.nome}</td>
+                        <td>${p.email}</td>
+                        <td>${p.cidade}/${p.estado}</td>
+                        <td>
+                            <button onclick="editar(${p.id})">Editar</button>
+                            <button onclick="deletar(${p.id})" style="color: red;">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editar(id) {
+            window.location.href = `/editar.html?id=${id}`;
+        }
+
+        async function deletar(id) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                await fetch(`/api/pessoas?id=${id}`, { method: 'DELETE' });
+                carregarDados(); // Recarrega a tabela
+            }
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>

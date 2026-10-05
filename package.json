@@ -1,0 +1,16 @@
+{
+  "name": "260930_crud_api",
+  "version": "1.0.0",
+  "description": "Sistema CRUD com Node.js, SQlite e API ViaCep",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "sqlite3": "^6.0.1"
+  }
+}

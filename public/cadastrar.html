@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Pessoa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        div {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Cadastrar Pessoa</h1>
+    <form id="formCadastro">
+        <div>
+            <label for="tipo">Tipo de Cadastro:</label>
+            <select id="tipo" style="width: 100%; padding: 8px;" required>
+                <option value="estudante">Estudante</option>
+                <option value="professor">Professor</option>
+                <option value="administrativo">Administrativo</option>
+                <option value="terceiro">Terceiro</option>
+                <option value="visitante" selected>Visitante</option>
+            </select>
+        </div>
+
+        <div><label>Nome:</label> <input type="text" id="nome" required></div>
+        <div><label>Email:</label> <input type="email" id="email" required></div>
+        <div><label>Telefone:</label> <input type="text" id="telefone" required></div>
+
+        <hr>
+        <h3>Endereço</h3>
+        <div><label>CEP:</label> <input type="text" id="cep" required placeholder="Digite e saia do campo"></div>
+        <div><label>Logradouro:</label> <input type="text" id="logradouro" required></div>
+        <div><label>Número:</label> <input type="text" id="numero" required></div>
+        <div><label>Complemento:</label> <input type="text" id="complemento"></div>
+        <div><label>Bairro:</label> <input type="text" id="bairro" required></div>
+        <div><label>Cidade:</label> <input type="text" id="cidade" readonly></div>
+        <div><label>Estado (UF):</label> <input type="text" id="estado" readonly></div>
+
+        <button type="submit">Salvar Cadastro</button>
+        <a href="/" style="margin-left: 10px;">Voltar</a>
+    </form>
+
+    <script>
+        // API ViaCEP
+        document.getElementById('cep').addEventListener('blur', async (e) => {
+            const cep = e.target.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                try {
+                    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await res.json();
+                    if (!data.erro) {
+                        document.getElementById('logradouro').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade;
+                        document.getElementById('estado').value = data.uf;
+                        document.getElementById('numero').focus(); // Foca no número
+                    } else {
+                        alert("CEP não encontrado!");
+                    }
+                } catch (err) {
+                    alert("Erro ao buscar o CEP.");
+                }
+            }
+        });
+
+        // Salvar via API
+        document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                tipo: document.getElementById('tipo').value,
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                cep: document.getElementById('cep').value,
+                logradouro: document.getElementById('logradouro').value,
+                numero: document.getElementById('numero').value,
+                complemento: document.getElementById('complemento').value,
+                bairro: document.getElementById('bairro').value,
+                cidade: document.getElementById('cidade').value,
+                estado: document.getElementById('estado').value
+            };
+
+            try {
+                const res = await fetch('/api/pessoas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert('Cadastrado com sucesso!');
+                    window.location.href = '/listar.html';
+                } else {
+                    const errData = await res.json();
+                    alert('Erro ao cadastrar: ' + (errData.error || 'Erro desconhecido'));
+                }
+            } catch (err) {
+                console.error("Erro de rede/servidor:", err);
+                alert("Erro ao concectar com o servidor.");
+            }
+        });
+    </script>
+</body>
+
+</html>

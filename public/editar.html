@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Pessoa</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+        div { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; background: #ffc107; color: black; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Editar Pessoa</h1>
+    <form id="formEditar">
+        <div><label>Nome:</label> <input type="text" id="nome" required></div>
+        <div><label>Email:</label> <input type="email" id="email" required></div>
+        <div><label>Telefone:</label> <input type="text" id="telefone" required></div>
+        
+        <hr>
+        <h3>Endereço</h3>
+        <div><label>CEP:</label> <input type="text" id="cep" required></div>
+        <div><label>Logradouro:</label> <input type="text" id="logradouro" required></div>
+        <div><label>Número:</label> <input type="text" id="numero" required></div>
+        <div><label>Complemento:</label> <input type="text" id="complemento"></div>
+        <div><label>Bairro:</label> <input type="text" id="bairro" required></div>
+        <div><label>Cidade:</label> <input type="text" id="cidade" readonly></div>
+        <div><label>Estado (UF):</label> <input type="text" id="estado" readonly></div>
+        
+        <button type="submit">Atualizar Cadastro</button>
+        <a href="/listar.html" style="margin-left: 10px;">Cancelar</a>
+    </form>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        // Carregar dados existentes
+        async function carregarPessoa() {
+            const res = await fetch(`/api/pessoas?id=${id}`);
+            const data = await res.json();
+            
+            document.getElementById('nome').value = data.nome;
+            document.getElementById('email').value = data.email;
+            document.getElementById('telefone').value = data.telefone;
+            document.getElementById('cep').value = data.cep;
+            document.getElementById('logradouro').value = data.logradouro;
+            document.getElementById('numero').value = data.numero;
+            document.getElementById('complemento').value = data.complemento;
+            document.getElementById('bairro').value = data.bairro;
+            document.getElementById('cidade').value = data.cidade;
+            document.getElementById('estado').value = data.estado;
+        }
+
+        carregarPessoa();
+
+        // O ViaCEP pode ser reutilizado aqui igual no cadastrar.html se desejar que atualize ao mudar o CEP.
+        document.getElementById('cep').addEventListener('blur', async (e) => {
+            const cep = e.target.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await res.json();
+                if (!data.erro) {
+                    document.getElementById('logradouro').value = data.logradouro;
+                    document.getElementById('bairro').value = data.bairro;
+                    document.getElementById('cidade').value = data.localidade;
+                    document.getElementById('estado').value = data.uf;
+                }
+            }
+        });
+
+        // Salvar Edição
+        document.getElementById('formEditar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                cep: document.getElementById('cep').value,
+                logradouro: document.getElementById('logradouro').value,
+                numero: document.getElementById('numero').value,
+                complemento: document.getElementById('complemento').value,
+                bairro: document.getElementById('bairro').value,
+                cidade: document.getElementById('cidade').value,
+                estado: document.getElementById('estado').value
+            };
+
+            const res = await fetch(`/api/pessoas?id=${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('Atualizado com sucesso!');
+                window.location.href = '/listar.html';
+            }
+        });
+    </script>
+</body>
+</html>
