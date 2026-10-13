@@ -2,25 +2,34 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Consultar Cadastros</title>
+    <title>Agenda de Contatos</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
         button { cursor: pointer; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .btn-add { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; }
+        .btn-home { color: #007bff; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>Cadastros Realizados</h1>
-    <a href="/">Voltar ao Menu Principal</a>
-    
+    <div class="top-bar">
+        <a href="/" class="btn-home">🏠 Menu Inicial</a>
+        <a href="/cadastrar.html" class="btn-add">+ Adicionar Novo Contato</a>
+    </div>
+
+    <h1>Agenda de Contatos Cadastrados</h1>
+
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Nome</th>
                 <th>Email</th>
+                <th>Telefone</th>
+                <th>Nascimento</th>
                 <th>Cidade/UF</th>
                 <th>Ações</th>
             </tr>
@@ -29,22 +38,31 @@
     </table>
 
     <script>
-        async function carregarDados() {
-            const res = await fetch('/api/pessoas');
-            const pessoas = await res.json();
+        async function carregarContatos() {
+            const res = await fetch('/api/contatos');
+            const contatos = await res.json();
             const tbody = document.getElementById('tabelaCorpo');
             tbody.innerHTML = '';
 
-            pessoas.forEach(p => {
+            if (contatos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum contato cadastrado.</td></tr>';
+                return;
+            }
+
+            contatos.forEach(c => {
+                const dataFmt = c.data_nascimento ? c.data_nascimento.split('-').reverse().join('/') : '';
+
                 tbody.innerHTML += `
                     <tr>
-                        <td>${p.id}</td>
-                        <td>${p.nome}</td>
-                        <td>${p.email}</td>
-                        <td>${p.cidade}/${p.estado}</td>
+                        <td>${c.id}</td>
+                        <td>${c.nome}</td>
+                        <td>${c.email}</td>
+                        <td>${c.telefone}</td>
+                        <td>${dataFmt}</td>
+                        <td>${c.cidade}/${c.estado}</td>
                         <td>
-                            <button onclick="editar(${p.id})">Editar</button>
-                            <button onclick="deletar(${p.id})" style="color: red;">Excluir</button>
+                            <button onclick="editar(${c.id})">Editar</button>
+                            <button onclick="deletar(${c.id})" style="color: red;">Excluir</button>
                         </td>
                     </tr>
                 `;
@@ -56,13 +74,13 @@
         }
 
         async function deletar(id) {
-            if (confirm('Tem certeza que deseja excluir?')) {
-                await fetch(`/api/pessoas?id=${id}`, { method: 'DELETE' });
-                carregarDados(); // Recarrega a tabela
+            if (confirm('Deseja realmente remover este contato?')) {
+                await fetch(`/api/contatos?id=${id}`, { method: 'DELETE' });
+                carregarContatos();
             }
         }
 
-        carregarDados();
+        carregarContatos();
     </script>
 </body>
 </html>
